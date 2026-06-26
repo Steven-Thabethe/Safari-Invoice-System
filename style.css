@@ -1,11 +1,8 @@
-/* ==========================================================================
-   Design System Variables & Global Setup
-   ========================================================================== */
 :root {
-    --primary-color: #2c3e50;    /* Slate Blue */
-    --accent-color: #d35400;     /* Safari Orange */
-    --bg-main: #f4f6f8;          /* Light grey canvas background */
-    --bg-card: #ffffff;          /* Pure white block backgrounds */
+    --primary-color: #2c3e50;
+    --accent-color: #d35400;
+    --bg-main: #f4f6f8;
+    --bg-card: #ffffff;
     --text-dark: #333333;
     --text-muted: #7f8c8d;
     --border-color: #dcdde1;
@@ -27,9 +24,6 @@ body {
     margin: 0 auto;
 }
 
-/* ==========================================================================
-   Header Layout
-   ========================================================================== */
 header {
     margin-bottom: 30px;
     border-bottom: 2px solid var(--primary-color);
@@ -39,18 +33,8 @@ header {
 header h1 {
     margin: 0 0 5px 0;
     color: var(--primary-color);
-    font-size: 2rem;
 }
 
-header p {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 1rem;
-}
-
-/* ==========================================================================
-   Dashboard Metric Cards Grid
-   ========================================================================== */
 .dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -71,7 +55,6 @@ header p {
     font-size: 0.95rem;
     text-transform: uppercase;
     color: var(--text-muted);
-    letter-spacing: 0.5px;
 }
 
 .card h3 {
@@ -80,30 +63,14 @@ header p {
     color: var(--primary-color);
 }
 
-/* Color code the Revenue card dynamically */
-.card:nth-child(2) {
-    border-left-color: var(--accent-color);
-}
-.card:nth-child(2) h3 {
-    color: var(--accent-color);
-}
+.card:nth-child(2) { border-left-color: var(--accent-color); }
+.card:nth-child(2) h3 { color: var(--accent-color); }
 
-/* ==========================================================================
-   Forms, Fields and Textareas
-   ========================================================================== */
 .invoice-form {
     background-color: var(--bg-card);
     padding: 30px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    margin-top: 30px;
-}
-
-.invoice-form h2 {
-    margin-top: 0;
-    color: var(--primary-color);
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
 }
 
 .form-row {
@@ -123,30 +90,16 @@ header p {
     font-weight: 600;
     margin-bottom: 8px;
     font-size: 0.9rem;
-    color: var(--primary-color);
 }
 
-input[type="text"],
-input[type="date"],
-input[type="number"] {
+input[type="text"], input[type="date"], input[type="number"] {
     width: 100%;
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     box-sizing: border-box;
-    font-size: 1rem;
-    color: var(--text-dark);
-    transition: border-color 0.2s;
 }
 
-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-/* ==========================================================================
-   Data Presentation Tables
-   ========================================================================== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -155,10 +108,9 @@ table {
 
 th {
     background-color: var(--primary-color);
-    color: #ffffff;
+    color: white;
     padding: 12px;
     text-align: left;
-    font-size: 0.95rem;
 }
 
 td {
@@ -166,86 +118,23 @@ td {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* Table inputs style corrections to seamlessly look inline */
-table input {
-    border: 1px solid transparent;
-    padding: 6px;
-    background: transparent;
-}
-
-table input:hover, 
-table input:focus {
-    border-color: var(--border-color);
-    background: #fff;
-}
-
 .lineTotal {
     font-weight: 600;
     color: var(--primary-color);
-    text-align: right;
-    padding-right: 20px;
-}
-
-th:last-child {
-    text-align: right;
-    padding-right: 20px;
-}
-
-/* ==========================================================================
-   Buttons and User Actions
-   ========================================================================== */
-.actions-bar {
-    margin: 20px 0;
-    text-align: right;
 }
 
 .btn {
     padding: 10px 20px;
-    font-size: 1rem;
     font-weight: 600;
     border-radius: var(--radius);
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
 }
 
-.btn:active {
-    transform: scale(0.98);
-}
+.primary-btn { background-color: var(--primary-color); color: white; }
+.secondary-btn { background-color: transparent; color: var(--primary-color); border: 2px dashed var(--primary-color); }
+.action-btn { background-color: var(--accent-color); color: white; width: 100%; font-size: 1.1rem; }
 
-.primary-btn {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.primary-btn:hover {
-    background-color: #1a252f;
-}
-
-.secondary-btn {
-    background-color: transparent;
-    color: var(--primary-color);
-    border: 2px dashed var(--primary-color);
-}
-
-.secondary-btn:hover {
-    background-color: rgba(44, 62, 80, 0.05);
-}
-
-.action-btn {
-    background-color: var(--accent-color);
-    color: white;
-    padding: 12px 30px;
-    font-size: 1.1rem;
-}
-
-.action-btn:hover {
-    background-color: #b34700;
-}
-
-/* ==========================================================================
-   Financial Aggregations Block
-   ========================================================================== */
 .total-display {
     text-align: right;
     margin-top: 20px;
@@ -254,81 +143,11 @@ th:last-child {
     border-radius: var(--radius);
 }
 
-.total-display h2 {
-    margin: 0;
-    border: none;
-    padding: 0;
-    font-size: 1.4rem;
-}
+#grandTotal { color: var(--accent-color); }
 
-#grandTotal {
-    color: var(--accent-color);
-}
-
-/* ==========================================================================
-   Responsive Viewport Intercepts
-   ========================================================================== */
-@media (max-width: 600px) {
-    body {
-        padding: 10px;
-    }
-    
-    .invoice-form {
-        padding: 15px;
-    }
-
-    table, thead, tbody, th, td, tr {
-        display: block;
-    }
-
-    th {
-        display: none; /* Hide header columns on small phones to stack items */
-    }
-
-    tr {
-        margin-bottom: 15px;
-        border: 1px solid var(--border-color);
-        padding: 10px;
-        border-radius: var(--radius);
-    }
-
-    td {
-        border-bottom: none;
-        padding: 5px 0;
-    }
-
-    .lineTotal {
-        text-align: left;
-        border-top: 1px dashed var(--border-color);
-        padding-top: 8px;
-        margin-top: 5px;
-    }
-}
-
-/* ==========================================================================
-   Print Export Overrides
-   ========================================================================== */
 @media print {
-    body {
-        background-color: #ffffff;
-        padding: 0;
-    }
-
-    .dashboard, 
-    .actions-bar, 
-    .form-actions, 
-    #generateInvoice, 
-    #addRow {
-        display: none !important; /* Hide management controls from final invoice sheet */
-    }
-
-    .invoice-form {
-        box-shadow: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    table input {
-        border: none !important;
-    }
+    body { background-color: white; padding: 0; }
+    .dashboard, .actions-bar, .form-actions, .no-print, .action-btn { display: none !important; }
+    .invoice-form { box-shadow: none; padding: 0; }
+    input { border: none !important; background: transparent !important; }
 }
