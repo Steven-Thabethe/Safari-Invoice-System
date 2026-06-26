@@ -33,7 +33,7 @@ addRowBtn.addEventListener('click', () => {
         <td><input type="number" class="qty" value="1" min="1"></td>
         <td><input type="number" class="price" value="0" min="0"></td>
         <td class="lineTotal">R0.00</td>
-        <td><button class="delete-btn" type="button" style="background:none; border:none; color:#c0392b; cursor:pointer; font-weight:bold;">X</button></td>
+        <td><button class="delete-btn no-print" type="button" style="background:none; border:none; color:#c0392b; cursor:pointer; font-weight:bold;">X</button></td>
     `;
     invoiceBody.appendChild(newRow);
     attachRowEventListeners(newRow);
@@ -52,7 +52,7 @@ generateInvoiceBtn.addEventListener('click', async () => {
     const invoiceDate = document.getElementById('invoiceDate').value;
     const currentTotal = parseFloat(grandTotalDisplay.innerText.replace('R', '')) || 0;
     
-    // Automatically generate a clean document number based on the current timestamp
+    // Automatically generate a document tracking number matching standard prefix styles
     const invoiceNumber = "BST/T" + Date.now().toString().slice(-4) + "/" + (invoiceDate ? invoiceDate.split('-')[1] + "/" + invoiceDate.split('-')[0] : "2026");
 
     // Validation Safeguards
@@ -61,12 +61,11 @@ generateInvoiceBtn.addEventListener('click', async () => {
         return;
     }
 
-    // Change button state during cloud synchronization transaction
     generateInvoiceBtn.innerText = "Syncing with Budzatja Invoice DB...";
     generateInvoiceBtn.disabled = true;
 
     try {
-        // Step A: Upsert Customer record (Insert or do nothing if they already exist)
+        // Step A: Upsert Customer record (Insert or do nothing if they already exist in cloud indexes)
         const { error: custError } = await supabase
             .from('customers')
             .upsert({ name: customerName }, { onConflict: 'name' });
@@ -81,7 +80,7 @@ generateInvoiceBtn.addEventListener('click', async () => {
                 customer_name: customerName,
                 invoice_date: invoiceDate,
                 grand_total: currentTotal,
-                deposit_percentage: 0, // You can link this to a select dropdown later if needed
+                deposit_percentage: 0,
                 deposit_amount: 0
             })
             .select()
@@ -120,7 +119,6 @@ generateInvoiceBtn.addEventListener('click', async () => {
 
         alert(`Invoice ${invoiceNumber} successfully saved to Budzatja Invoice DB!`);
         
-        // Refresh metrics instantly and run native print processing
         await fetchDashboardMetrics();
         window.print();
         resetInvoiceForm();
@@ -129,7 +127,7 @@ generateInvoiceBtn.addEventListener('click', async () => {
         console.error('Database Operation Failure:', err);
         alert('Cloud sync failed: ' + err.message);
     } finally {
-        generateInvoiceBtn.innerText = "Generate Invoice";
+        generateInvoiceBtn.innerText = "Generate & Save Invoice";
         generateInvoiceBtn.disabled = false;
     }
 });
@@ -140,12 +138,10 @@ generateInvoiceBtn.addEventListener('click', async () => {
 
 async function fetchDashboardMetrics() {
     try {
-        // Query Total Invoice Count and Revenue aggregations from your Supabase DB
         const { data: invoiceData, error: invErr } = await supabase
             .from('invoices')
             .select('grand_total');
         
-        // Query Unique Customer records count
         const { count: customerCount, error: custErr } = await supabase
             .from('customers')
             .select('*', { count: 'exact', head: true });
@@ -155,7 +151,6 @@ async function fetchDashboardMetrics() {
         const invoiceCount = invoiceData.length;
         const totalRevenue = invoiceData.reduce((acc, row) => acc + parseFloat(row.grand_total), 0);
 
-        // Update real-time UI counters
         invoiceCountStat.innerText = invoiceCount;
         totalRevenueStat.innerText = `R${totalRevenue.toFixed(2)}`;
         customerCountStat.innerText = customerCount || 0;
@@ -197,7 +192,7 @@ function resetInvoiceForm() {
             <td><input type="number" class="qty" value="1" min="1"></td>
             <td><input type="number" class="price" value="0" min="0"></td>
             <td class="lineTotal">R0.00</td>
-            <td></td>
+            <td class="no-print"></td>
         </tr>
     `;
     attachRowEventListeners(invoiceBody.querySelector('tr'));
