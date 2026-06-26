@@ -1,43 +1,131 @@
 /**
- * Budzatja Invoice System - Cloud Enabled (Budzatja Invoice DB Implementation)
+ * Budzatja Invoice System - Complete Relational Engine
  */
 
-// Initialize Supabase Client
-const SUPABASE_URL = 'https://pvbkejoczfvhifwdzbln.supabase.co/rest/v1/'; 
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2Ymtlam9jemZ2aGlmd2R6YmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTIyNjQsImV4cCI6MjA5ODA2ODI2NH0.9WOa2QdbK2ISlV-n2AQygNxm3wb9V7v_B5c4O85-vRI';
+// Initialize Cloud Connection Endpoints
+const SUPABASE_URL = 'https://pvbkejoczfvhifwdzbln.supabase.co'; 
+const SUPABASE_ANON_KEY = 'YOUR_LIVE_ANON_PUBLIC_KEY'; // Replace with your actual anon key string
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// DOM Element Registry 
+// DOM Elements Control Registry
 const invoiceBody = document.getElementById('invoiceBody');
 const addRowBtn = document.getElementById('addRow');
 const generateInvoiceBtn = document.getElementById('generateInvoice');
 const grandTotalDisplay = document.getElementById('grandTotal');
 
-// Dashboard Stat Counters
+// Real-Time Mirror Form Wiring Hooks
+const formCustomerName = document.getElementById('formCustomerName');
+const formCustomerVat = document.getElementById('formCustomerVat');
+const formAddress1 = document.getElementById('formAddress1');
+const formAddress2 = document.getElementById('formAddress2');
+const formAddress3 = document.getElementById('formAddress3');
+const formInvoiceDate = document.getElementById('formInvoiceDate');
+
+// Printable Text Targeting References
+const printCustomerName = document.getElementById('printCustomerName');
+const printCustomerVat = document.getElementById('printCustomerVat');
+const printAddress1 = document.getElementById('printAddress1');
+const printAddress2 = document.getElementById('printAddress2');
+const printAddress3 = document.getElementById('printAddress3');
+const printDocNo = document.getElementById('printDocNo');
+const printDocDate = document.getElementById('printDocDate');
+
+// Global Dashboard Metrics Nodes
 const invoiceCountStat = document.getElementById('invoiceCount');
-const totalRevenueStat = document.querySelectorAll('.dashboard .card h3')[1];
-const customerCountStat = document.querySelectorAll('.dashboard .card h3')[2];
+const totalRevenueStat = document.getElementById('totalRevenue');
+const customerCountStat = document.getElementById('customerCount');
 
 /* ==========================================================================
-   Event Listeners Setup
+   Real-Time Data Mirroring Functionality
    ========================================================================== */
+function setupLiveMirroring() {
+    formCustomerName.addEventListener('input', (e) => {
+        printCustomerName.innerText = e.target.value.trim() || '[Customer Name]';
+    });
+    formCustomerVat.addEventListener('input', (e) => {
+        printCustomerVat.innerText = e.target.value.trim() || '--------';
+    });
+    formAddress1.addEventListener('input', (e) => { printAddress1.innerText = e.target.value.trim(); });
+    formAddress2.addEventListener('input', (e) => { printAddress2.innerText = e.target.value.trim(); });
+    formAddress3.addEventListener('input', (e) => { printAddress3.innerText = e.target.value.trim(); });
+    
+    formInvoiceDate.addEventListener('change', (e) => {
+        if(!e.target.value) return;
+        const d = new Date(e.target.value);
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        printDocDate.innerText = d.toLocaleDateString('en-ZA', options);
+        
+        // Generate document running series ID tracker reactively
+        const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+        const yearStr = d.getFullYear();
+        const trackingNum = "BST/T" + Math.floor(1000 + Math.random() * 9000) + "/" + monthStr + "/" + yearStr;
+        printDocNo.innerText = trackingNum;
+    });
+}
 
-// Initialize Dashboard Metrics from DB on application startup
-document.addEventListener('DOMContentLoaded', fetchDashboardMetrics);
+/* ==========================================================================
+   Row Operations & Calculations Management
+   ========================================================================== */
+function attachRowEventListeners(row) {
+    const qtyInput = row.querySelector('.row-qty, .qty'); // Safely captures previous layout classes
+    const priceInput = row.querySelector('.row-price, .price');
+    const finalQty = qtyInput || row.querySelector('input[type="number"]'); // Fallback lookup selector
 
+    row.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => calculateRowTotal(row));
+    });
+}
+
+function calculateRowTotal(row) {
+    // Detect variations of guest parsing strings or numeric counts
+    const paxInput = row.querySelector('.row-pax');
+    const priceInput = row.querySelector('.row-price');
+    const lineTotalCell = row.querySelector('.lineTotal');
+
+    [span_3](start_span)// Parse the leading integer out of string descriptions like "5 Adults" or "6 Adult"[span_3](end_span)
+    let qty = 1;
+    if(paxInput) {
+        const match = paxInput.value.match(/\d+/);
+        qty = match ? parseInt(match[0]) : 1;
+    }
+    
+    const price = parseFloat(priceInput.value) || 0;
+    const total = qty * price;
+
+    lineTotalCell.innerText = `R${total.toFixed(2)}`;
+    calculateGrandTotal();
+}
+
+function calculateGrandTotal() {
+    let sum = 0;
+    invoiceBody.querySelectorAll('tr').forEach(row => {
+        const paxInput = row.querySelector('.row-pax');
+        const priceInput = row.querySelector('.row-price');
+        
+        let qty = 1;
+        if(paxInput) {
+            const match = paxInput.value.match(/\d+/);
+            qty = match ? parseInt(match[0]) : 1;
+        }
+        const price = parseFloat(priceInput.value) || 0;
+        sum += qty * price;
+    });
+    grandTotalDisplay.innerText = `R${sum.toFixed(2)}`;
+}
+
+// Append rows inside our matrix sheet layout
 addRowBtn.addEventListener('click', () => {
     const newRow = document.createElement('tr');
     newRow.innerHTML = `
-        <td><input type="date" class="booked-date"></td>
-        <td><input type="text" placeholder="e.g. KNP Full Day Safari"></td>
-        <td><input type="number" class="qty" value="1" min="1"></td>
-        <td><input type="number" class="price" value="0" min="0"></td>
-        <td class="lineTotal">R0.00</td>
-        <td><button class="delete-btn no-print" type="button" style="background:none; border:none; color:#c0392b; cursor:pointer; font-weight:bold;">X</button></td>
+        <td><input type="date" class="row-booked-date"></td>
+        <td><input type="text" class="row-desc" placeholder="e.g. KNP Full Day Safari"></td>
+        <td><input type="text" class="row-pax" placeholder="e.g. 6 Adult (International)"></td>
+        <td><input type="number" class="row-price" value="0" min="0" step="0.01"></td>
+        <td class="lineTotal" style="text-align: right; font-weight: 600;">R0.00</td>
+        <td class="no-print" style="text-align: center;"><button class="delete-btn" type="button" style="background:none; border:none; color:#c0392b; cursor:pointer; font-weight:bold;">X</button></td>
     `;
     invoiceBody.appendChild(newRow);
     attachRowEventListeners(newRow);
-    calculateGrandTotal();
 });
 
 invoiceBody.addEventListener('click', (e) => {
@@ -47,17 +135,21 @@ invoiceBody.addEventListener('click', (e) => {
     }
 });
 
+/* ==========================================================================
+   Supabase Database Operations Transaction Controller
+   ========================================================================== */
 generateInvoiceBtn.addEventListener('click', async () => {
-    const customerName = document.getElementById('customerName').value.trim();
-    const invoiceDate = document.getElementById('invoiceDate').value;
+    const customerName = formCustomerName.value.trim();
+    const vatNum = formCustomerVat.value.trim();
+    const addr1 = formAddress1.value.trim();
+    const addr2 = formAddress2.value.trim();
+    const addr3 = formAddress3.value.trim();
+    const invDate = formInvoiceDate.value;
     const currentTotal = parseFloat(grandTotalDisplay.innerText.replace('R', '')) || 0;
-    
-    // Automatically generate a document tracking number matching standard prefix styles
-    const invoiceNumber = "BST/T" + Date.now().toString().slice(-4) + "/" + (invoiceDate ? invoiceDate.split('-')[1] + "/" + invoiceDate.split('-')[0] : "2026");
+    const docNo = printDocNo.innerText;
 
-    // Validation Safeguards
-    if (!customerName || !invoiceDate || currentTotal <= 0) {
-        alert('Please fully complete the Customer Name, Invoice Date, and add billable services.');
+    if (!customerName || !invDate || currentTotal <= 0) {
+        alert('Please complete the Customer Name, Invoice Date, and add billable line items before processing.');
         return;
     }
 
@@ -65,50 +157,57 @@ generateInvoiceBtn.addEventListener('click', async () => {
     generateInvoiceBtn.disabled = true;
 
     try {
-        // Step A: Upsert Customer record (Insert or do nothing if they already exist in cloud indexes)
+        // Step A: Upsert Customer Master Profile
         const { error: custError } = await supabase
             .from('customers')
-            .upsert({ name: customerName }, { onConflict: 'name' });
+            .upsert({ 
+                name: customerName,
+                vat_number: vatNum || null,
+                address_line1: addr1 || null,
+                address_line2: addr2 || null,
+                address_line3: addr3 || null
+            }, { onConflict: 'name' });
 
         if (custError) throw custError;
 
-        // Step B: Write master Invoice entry
+        // Step B: Insert Invoice High-Level Summary Record
         const { data: invoiceData, error: invError } = await supabase
             .from('invoices')
             .insert({
-                invoice_number: invoiceNumber,
+                invoice_number: docNo,
                 customer_name: customerName,
-                invoice_date: invoiceDate,
-                grand_total: currentTotal,
-                deposit_percentage: 0,
-                deposit_amount: 0
+                invoice_date: invDate,
+                grand_total: currentTotal
             })
             .select()
             .single();
 
         if (invError) throw invError;
 
-        // Step C: Batch compile and commit all nested Line Items 
-        const lineItemRows = invoiceBody.querySelectorAll('tr');
+        // Step C: Compile dynamic row collection array metrics
+        const rows = invoiceBody.querySelectorAll('tr');
         const itemsToInsert = [];
 
-        lineItemRows.forEach(row => {
-            const bookedDate = row.querySelector('.booked-date').value || invoiceDate;
-            const desc = row.querySelector('input[type="text"]').value.trim() || 'Safari Service';
-            const qty = parseInt(row.querySelector('.qty').value) || 0;
-            const price = parseFloat(row.querySelector('.price').value) || 0;
-            const lineTotal = qty * price;
+        rows.forEach(row => {
+            const rowDate = row.querySelector('.row-booked-date').value || invDate;
+            const rowDesc = row.querySelector('.row-desc').value.trim() || 'Safari Services';
+            const rowPax = row.querySelector('.row-pax').value.trim() || '1 Person';
+            const rowPrice = parseFloat(row.querySelector('.row-price').value) || 0;
+            
+            let qtyMultiplier = 1;
+            const match = rowPax.match(/\d+/);
+            if (match) qtyMultiplier = parseInt(match[0]);
+            
+            const lineSum = qtyMultiplier * rowPrice;
 
-            if (qty > 0) {
-                itemsToInsert.push({
-                    invoice_id: invoiceData.id,
-                    booked_date: bookedDate,
-                    service_description: desc,
-                    guests: qty,
-                    price_per_person: price,
-                    line_total: lineTotal
-                });
-            }
+            itemsToInsert.push({
+                invoice_id: invoiceData.id,
+                booked_date: rowDate,
+                service_description: rowDesc,
+                guests: rowPax,
+                price_per_person: rowPrice,
+                line_total: lineSum
+            });
         });
 
         const { error: itemsError } = await supabase
@@ -117,88 +216,69 @@ generateInvoiceBtn.addEventListener('click', async () => {
 
         if (itemsError) throw itemsError;
 
-        alert(`Invoice ${invoiceNumber} successfully saved to Budzatja Invoice DB!`);
+        alert(`Invoice record ${docNo} successfully securely locked to cloud DB!`);
         
         await fetchDashboardMetrics();
         window.print();
-        resetInvoiceForm();
+        resetSystemForm();
 
     } catch (err) {
-        console.error('Database Operation Failure:', err);
-        alert('Cloud sync failed: ' + err.message);
+        console.error('Cloud Sync Execution Failure:', err);
+        alert('Error mapping transaction context: ' + err.message);
     } finally {
-        generateInvoiceBtn.innerText = "Generate & Save Invoice";
+        generateInvoiceBtn.innerText = "Save to Cloud & Print Document";
         generateInvoiceBtn.disabled = false;
     }
 });
 
 /* ==========================================================================
-   Calculation & Cloud Sync Aggregations Engine
+   State Aggregations Loader Engine
    ========================================================================== */
-
 async function fetchDashboardMetrics() {
     try {
-        const { data: invoiceData, error: invErr } = await supabase
-            .from('invoices')
-            .select('grand_total');
-        
-        const { count: customerCount, error: custErr } = await supabase
-            .from('customers')
-            .select('*', { count: 'exact', head: true });
+        const { data: invoiceData, error: invErr } = await supabase.from('invoices').select('grand_total');
+        const { count: customerCount, error: custErr } = await supabase.from('customers').select('*', { count: 'exact', head: true });
 
         if (invErr || custErr) throw (invErr || custErr);
 
-        const invoiceCount = invoiceData.length;
-        const totalRevenue = invoiceData.reduce((acc, row) => acc + parseFloat(row.grand_total), 0);
+        const totalRevenue = invoiceData.reduce((acc, r) => acc + parseFloat(r.grand_total), 0);
 
-        invoiceCountStat.innerText = invoiceCount;
+        invoiceCountStat.innerText = invoiceData.length;
         totalRevenueStat.innerText = `R${totalRevenue.toFixed(2)}`;
         customerCountStat.innerText = customerCount || 0;
-
     } catch (err) {
-        console.error('Error fetching dashboard historical data:', err.message);
+        console.error('Error refreshing cloud application layout counters:', err.message);
     }
 }
 
-function calculateRowTotal(row) {
-    const qty = parseFloat(row.querySelector('.qty').value) || 0;
-    const price = parseFloat(row.querySelector('.price').value) || 0;
-    row.querySelector('.lineTotal').innerText = `R${(qty * price).toFixed(2)}`;
-    calculateGrandTotal();
-}
+function resetSystemForm() {
+    formCustomerName.value = ''; formCustomerVat.value = '';
+    formAddress1.value = ''; formAddress2.value = ''; formAddress3.value = '';
+    formInvoiceDate.value = '';
+    
+    printCustomerName.innerText = '[Customer Name]'; printCustomerVat.innerText = '--------';
+    printAddress1.innerText = ''; printAddress2.innerText = ''; printAddress3.innerText = '';
+    printDocNo.innerText = 'BST/TXXXX/XX/2026'; printDocDate.innerText = '-- April 2026';
 
-function calculateGrandTotal() {
-    let sum = 0;
-    invoiceBody.querySelectorAll('tr').forEach(row => {
-        const qty = parseFloat(row.querySelector('.qty').value) || 0;
-        const price = parseFloat(row.querySelector('.price').value) || 0;
-        sum += qty * price;
-    });
-    grandTotalDisplay.innerText = `R${sum.toFixed(2)}`;
-}
-
-function attachRowEventListeners(row) {
-    row.querySelector('.qty').addEventListener('input', () => calculateRowTotal(row));
-    row.querySelector('.price').addEventListener('input', () => calculateRowTotal(row));
-}
-
-function resetInvoiceForm() {
-    document.getElementById('customerName').value = '';
-    document.getElementById('invoiceDate').value = '';
     invoiceBody.innerHTML = `
         <tr>
-            <td><input type="date" class="booked-date"></td>
-            <td><input type="text" placeholder="e.g. KNP Full Day Safari"></td>
-            <td><input type="number" class="qty" value="1" min="1"></td>
-            <td><input type="number" class="price" value="0" min="0"></td>
-            <td class="lineTotal">R0.00</td>
-            <td class="no-print"></td>
+            <td><input type="date" class="row-booked-date"></td>
+            <td><input type="text" class="row-desc" placeholder="e.g. Transfer"></td>
+            <td><input type="text" class="row-pax" placeholder="e.g. 5 Adults"></td>
+            <td><input type="number" class="row-price" value="0" min="0" step="0.01"></td>
+            <td class="lineTotal" style="text-align: right; font-weight: 600;">R0.00</td>
+            <td class="no-print" style="text-align: center;"></td>
         </tr>
     `;
     attachRowEventListeners(invoiceBody.querySelector('tr'));
     calculateGrandTotal();
 }
 
-if (invoiceBody.querySelector('tr')) {
-    attachRowEventListeners(invoiceBody.querySelector('tr'));
-}
+// Global System Launch Hook
+document.addEventListener('DOMContentLoaded', () => {
+    fetchDashboardMetrics();
+    setupLiveMirroring();
+    if (invoiceBody.querySelector('tr')) {
+        attachRowEventListeners(invoiceBody.querySelector('tr'));
+    }
+});
