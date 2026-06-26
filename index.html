@@ -42,3 +42,40 @@
 
 </body>
 </html>
+<section class="invoice-form">
+
+    <h2>Create Invoice</h2>
+
+    <input type="text" id="customerName" placeholder="Customer Name">
+
+    <input type="date" id="invoiceDate">
+
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Guests</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+        <tbody id="invoiceBody">
+            <tr>
+                <td><input type="text" placeholder="Transfer"></td>
+                <td><input type="number" class="qty" value="1"></td>
+                <td><input type="number" class="price" value="0"></td>
+                <td class="lineTotal">R0.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button id="addRow">+ Add Service</button>
+
+    <h2>Total: <span id="grandTotal">R0.00</span></h2>
+
+    <button id="generateInvoice">
+        Generate Invoice
+    </button>
+
+</section>
