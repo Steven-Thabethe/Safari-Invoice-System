@@ -1,11 +1,11 @@
 /**
- * Budzatja Invoice System - Core Application Script
+ * Budzatja Invoice System - Cloud Enabled (Budzatja Invoice DB Implementation)
  */
 
-// Global State Arrays to hold processed data across live browser session
-let invoices = [];
-let uniqueCustomers = new Set();
-let totalRevenue = 0.00;
+// Initialize Supabase Client
+const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // DOM Element Registry 
 const invoiceBody = document.getElementById('invoiceBody');
@@ -15,17 +15,20 @@ const grandTotalDisplay = document.getElementById('grandTotal');
 
 // Dashboard Stat Counters
 const invoiceCountStat = document.getElementById('invoiceCount');
-const totalRevenueStat = document.querySelectorAll('.dashboard .card h3')[1]; // Second dashboard card
-const customerCountStat = document.querySelectorAll('.dashboard .card h3')[2]; // Third dashboard card
+const totalRevenueStat = document.querySelectorAll('.dashboard .card h3')[1];
+const customerCountStat = document.querySelectorAll('.dashboard .card h3')[2];
 
 /* ==========================================================================
    Event Listeners Setup
    ========================================================================== */
 
-// Handle dynamic appending of new item rows
+// Initialize Dashboard Metrics from DB on application startup
+document.addEventListener('DOMContentLoaded', fetchDashboardMetrics);
+
 addRowBtn.addEventListener('click', () => {
     const newRow = document.createElement('tr');
     newRow.innerHTML = `
+        <td><input type="date" class="booked-date"></td>
         <td><input type="text" placeholder="e.g. KNP Full Day Safari"></td>
         <td><input type="number" class="qty" value="1" min="1"></td>
         <td><input type="number" class="price" value="0" min="0"></td>
@@ -33,52 +36,174 @@ addRowBtn.addEventListener('click', () => {
         <td><button class="delete-btn" type="button" style="background:none; border:none; color:#c0392b; cursor:pointer; font-weight:bold;">X</button></td>
     `;
     invoiceBody.appendChild(newRow);
-    
-    // Attach input listeners to the newly added row
     attachRowEventListeners(newRow);
     calculateGrandTotal();
 });
 
-// Capture and handle clicks on the dynamically generated row delete buttons
 invoiceBody.addEventListener('click', (e) => {
     if (e.target.classList.contains('delete-btn')) {
-        const row = e.target.closest('tr');
-        row.remove();
+        e.target.closest('tr').remove();
         calculateGrandTotal();
     }
 });
 
-// Generate and finalize invoice transaction on click
-generateInvoiceBtn.addEventListener('click', () => {
+generateInvoiceBtn.addEventListener('click', async () => {
     const customerName = document.getElementById('customerName').value.trim();
     const invoiceDate = document.getElementById('invoiceDate').value;
     const currentTotal = parseFloat(grandTotalDisplay.innerText.replace('R', '')) || 0;
+    
+    // Automatically generate a clean document number based on the current timestamp
+    const invoiceNumber = "BST/T" + Date.now().toString().slice(-4) + "/" + (invoiceDate ? invoiceDate.split('-')[1] + "/" + invoiceDate.split('-')[0] : "2026");
 
     // Validation Safeguards
-    if (!customerName) {
-        alert('Please enter a Customer Name before generating the invoice.');
-        return;
-    }
-    if (!invoiceDate) {
-        alert('Please select an Invoice Date.');
-        return;
-    }
-    if (currentTotal <= 0) {
-        alert('Please add at least one billable service with a price greater than R0.00.');
+    if (!customerName || !invoiceDate || currentTotal <= 0) {
+        alert('Please fully complete the Customer Name, Invoice Date, and add billable services.');
         return;
     }
 
-    // Process tracking state mutations
-    invoices.push({
-        customer: customerName,
-        date: invoiceDate,
-        amount: currentTotal
+    // Change button state during cloud synchronization transaction
+    generateInvoiceBtn.innerText = "Syncing with Budzatja Invoice DB...";
+    generateInvoiceBtn.disabled = true;
+
+    try {
+        // Step A: Upsert Customer record (Insert or do nothing if they already exist)
+        const { error: custError } = await supabase
+            .from('customers')
+            .upsert({ name: customerName }, { onConflict: 'name' });
+
+        if (custError) throw custError;
+
+        // Step B: Write master Invoice entry
+        const { data: invoiceData, error: invError } = await supabase
+            .from('invoices')
+            .insert({
+                invoice_number: invoiceNumber,
+                customer_name: customerName,
+                invoice_date: invoiceDate,
+                grand_total: currentTotal,
+                deposit_percentage: 0, // You can link this to a select dropdown later if needed
+                deposit_amount: 0
+            })
+            .select()
+            .single();
+
+        if (invError) throw invError;
+
+        // Step C: Batch compile and commit all nested Line Items 
+        const lineItemRows = invoiceBody.querySelectorAll('tr');
+        const itemsToInsert = [];
+
+        lineItemRows.forEach(row => {
+            const bookedDate = row.querySelector('.booked-date').value || invoiceDate;
+            const desc = row.querySelector('input[type="text"]').value.trim() || 'Safari Service';
+            const qty = parseInt(row.querySelector('.qty').value) || 0;
+            const price = parseFloat(row.querySelector('.price').value) || 0;
+            const lineTotal = qty * price;
+
+            if (qty > 0) {
+                itemsToInsert.push({
+                    invoice_id: invoiceData.id,
+                    booked_date: bookedDate,
+                    service_description: desc,
+                    guests: qty,
+                    price_per_person: price,
+                    line_total: lineTotal
+                });
+            }
+        });
+
+        const { error: itemsError } = await supabase
+            .from('invoice_items')
+            .insert(itemsToInsert);
+
+        if (itemsError) throw itemsError;
+
+        alert(`Invoice ${invoiceNumber} successfully saved to Budzatja Invoice DB!`);
+        
+        // Refresh metrics instantly and run native print processing
+        await fetchDashboardMetrics();
+        window.print();
+        resetInvoiceForm();
+
+    } catch (err) {
+        console.error('Database Operation Failure:', err);
+        alert('Cloud sync failed: ' + err.message);
+    } finally {
+        generateInvoiceBtn.innerText = "Generate Invoice";
+        generateInvoiceBtn.disabled = false;
+    }
+});
+
+/* ==========================================================================
+   Calculation & Cloud Sync Aggregations Engine
+   ========================================================================== */
+
+async function fetchDashboardMetrics() {
+    try {
+        // Query Total Invoice Count and Revenue aggregations from your Supabase DB
+        const { data: invoiceData, error: invErr } = await supabase
+            .from('invoices')
+            .select('grand_total');
+        
+        // Query Unique Customer records count
+        const { count: customerCount, error: custErr } = await supabase
+            .from('customers')
+            .select('*', { count: 'exact', head: true });
+
+        if (invErr || custErr) throw (invErr || custErr);
+
+        const invoiceCount = invoiceData.length;
+        const totalRevenue = invoiceData.reduce((acc, row) => acc + parseFloat(row.grand_total), 0);
+
+        // Update real-time UI counters
+        invoiceCountStat.innerText = invoiceCount;
+        totalRevenueStat.innerText = `R${totalRevenue.toFixed(2)}`;
+        customerCountStat.innerText = customerCount || 0;
+
+    } catch (err) {
+        console.error('Error fetching dashboard historical data:', err.message);
+    }
+}
+
+function calculateRowTotal(row) {
+    const qty = parseFloat(row.querySelector('.qty').value) || 0;
+    const price = parseFloat(row.querySelector('.price').value) || 0;
+    row.querySelector('.lineTotal').innerText = `R${(qty * price).toFixed(2)}`;
+    calculateGrandTotal();
+}
+
+function calculateGrandTotal() {
+    let sum = 0;
+    invoiceBody.querySelectorAll('tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        sum += qty * price;
     });
-    
-    uniqueCustomers.add(customerName);
-    totalRevenue += currentTotal;
+    grandTotalDisplay.innerText = `R${sum.toFixed(2)}`;
+}
 
-    // Commit changes straight to the dashboard visual cards
-    updateDashboardMetrics();
+function attachRowEventListeners(row) {
+    row.querySelector('.qty').addEventListener('input', () => calculateRowTotal(row));
+    row.querySelector('.price').addEventListener('input', () => calculateRowTotal(row));
+}
 
-    // Notify user and launch system
+function resetInvoiceForm() {
+    document.getElementById('customerName').value = '';
+    document.getElementById('invoiceDate').value = '';
+    invoiceBody.innerHTML = `
+        <tr>
+            <td><input type="date" class="booked-date"></td>
+            <td><input type="text" placeholder="e.g. KNP Full Day Safari"></td>
+            <td><input type="number" class="qty" value="1" min="1"></td>
+            <td><input type="number" class="price" value="0" min="0"></td>
+            <td class="lineTotal">R0.00</td>
+            <td></td>
+        </tr>
+    `;
+    attachRowEventListeners(invoiceBody.querySelector('tr'));
+    calculateGrandTotal();
+}
+
+if (invoiceBody.querySelector('tr')) {
+    attachRowEventListeners(invoiceBody.querySelector('tr'));
+}
