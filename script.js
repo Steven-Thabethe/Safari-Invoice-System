@@ -4,7 +4,7 @@
 
 // Initialize Supabase Client
 const SUPABASE_URL = 'https://pvbkejoczfvhifwdzbln.supabase.co/rest/v1/'; 
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2Ymtlam9jemZ2aGlmd2R6YmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTIyNjQsImV4cCI6MjA5ODA2ODI2NH0.9WOa2QdbK2ISlV-n2AQygNxm3wb9V7v_B5c4O85-vRI';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // DOM Element Registry 
