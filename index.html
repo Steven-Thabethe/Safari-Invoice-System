@@ -9,85 +9,157 @@
 <body>
 
 <div class="container">
-
-    <header>
+    
+    <header class="no-print">
         <h1>Budzatja Invoice System</h1>
-        <p>Professional Invoice Management</p>
+        <p>Professional Invoice & Cloud Database Management</p>
     </header>
 
-    <div class="dashboard">
+    <div class="dashboard no-print">
         <div class="card">
             <h2>Total Invoices</h2>
             <h3 id="invoiceCount">0</h3>
         </div>
-
         <div class="card">
             <h2>Total Revenue</h2>
-            <h3>R0.00</h3>
+            <h3 id="totalRevenue">R0.00</h3>
         </div>
-
         <div class="card">
-            <h2>Customers</h2>
-            <h3>0</h3>
+            <h2>Unique Customers</h2>
+            <h3 id="customerCount">0</h3>
         </div>
     </div>
 
-    <div class="actions-bar">
-        <button id="newInvoice" class="btn primary-btn">Create New Invoice</button>
+    <div class="app-layout">
+        
+        <section class="invoice-form no-print">
+            <h2>Create New Invoice</h2>
+            
+            <div class="form-group">
+                <label>Customer Corporate Name</label>
+                <input type="text" id="formCustomerName" placeholder="e.g. Mavrican (Pty) Ltd">
+            </div>
+            
+            <div class="form-group">
+                <label>Customer VAT Number (Optional)</label>
+                <input type="text" id="formCustomerVat" placeholder="e.g. 4010216523">
+            </div>
+
+            <div class="form-group">
+                <label>Billing Address Line 1</label>
+                <input type="text" id="formAddress1" placeholder="e.g. Unit 1611">
+            </div>
+            <div class="form-group">
+                <label>Billing Address Line 2</label>
+                <input type="text" id="formAddress2" placeholder="e.g. Whistling Thorn">
+            </div>
+            <div class="form-group">
+                <label>Billing Address Line 3</label>
+                <input type="text" id="formAddress3" placeholder="e.g. Serengeti">
+            </div>
+
+            <div class="form-group">
+                <label>Invoice Date</label>
+                <input type="date" id="formInvoiceDate">
+            </div>
+
+            <button id="generateInvoice" class="btn action-btn">Save to Cloud & Print Document</button>
+        </section>
+
+        <section class="invoice-sheet">
+            
+            <div class="invoice-header">
+                <div class="brand">
+                    <span class="brand-title">Budzatja</span>
+                    <span class="brand-subtitle">SAFARIS & TOURING</span>
+                    <p class="tagline">"See Africa at her best"</p>
+                </div>
+                <div class="company-meta">
+                    <p><strong>Reg No:</strong> 2015/166188/07</p>
+                    <p><strong>Tax No:</strong> 9672431161</p>
+                </div>
+            </div>
+
+            <div class="doc-title-bar">
+                <h1>TAX INVOICE</h1>
+            </div>
+
+            <div class="meta-grid">
+                <div class="client-delivery">
+                    <h3>Delivered to:</h3>
+                    <div id="printCustomerName" class="val-placeholder">[Customer Name]</div>
+                    <div id="printCustomerAccount" style="color: #7f8c8d; font-size: 0.85rem; margin: 2px 0;">CASH ACCOUNT</div>
+                    <div id="printAddress1"></div>
+                    <div id="printAddress2"></div>
+                    <div id="printAddress3"></div>
+                </div>
+                <div class="document-details">
+                    <p><strong>Document No:</strong> <span id="printDocNo">BST/TXXXX/XX/2026</span></p>
+                    <p><strong>Date:</strong> <span id="printDocDate">-- April 2026</span></p>
+                    <p><strong>VAT Number:</strong> <span id="printCustomerVat">--------</span></p>
+                    <p><strong>Pages:</strong> 1 of 1</p>
+                </div>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Booked Date</th>
+                        <th>Description</th>
+                        <th>Number of pax</th>
+                        <th>Rate per Person</th>
+                        <th style="text-align: right;">Sub-Total</th>
+                        <th class="no-print" style="width: 40px; text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceBody">
+                    <tr>
+                        <td><input type="date" class="row-booked-date"></td>
+                        <td><input type="text" class="row-desc" placeholder="e.g. Transfer"></td>
+                        <td><input type="text" class="row-pax" placeholder="e.g. 5 Adults"></td>
+                        <td><input type="number" class="row-price" value="0" min="0" step="0.01"></td>
+                        <td class="lineTotal" style="text-align: right; font-weight: 600;">R0.00</td>
+                        <td class="no-print" style="text-align: center;"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="no-print" style="margin-bottom: 20px;">
+                <button id="addRow" class="btn secondary-btn">+ Add Service Row</button>
+            </div>
+
+            <div class="grand-total-section">
+                <h2>TOTAL: <span id="grandTotal">R0.00</span></h2>
+            </div>
+
+            <div class="banking-details-block">
+                <h3>BANKING DETAILS:</h3>
+                <table>
+                    <tr><td><strong>Bank:</strong> STANDARD BANK LIMITED</td><td><strong>Branch:</strong> MALELANE</td></tr>
+                    <tr><td><strong>Name of account:</strong> BUDZATJA SAFARIS AND TOURING (PTY LTD)</td><td><strong>Branch code:</strong> 053252</td></tr>
+                    <tr><td><strong>Account number:</strong> 372816363</td><td><strong>BrCd. Electronic:</strong> 051001</td></tr>
+                    <tr><td><strong>Account type:</strong> BUSINESS CURRENT ACCOUNT</td><td><strong>Swift Address:</strong> SBZA ZA JJ</td></tr>
+                </table>
+            </div>
+
+            <div class="terms-conditions-block">
+                <h4>BOOKING TERMS AND CONDITIONS</h4>
+                <p>Please note standard deposit requirements: 3-6 months prior to travel: 50% | 1-2 months prior: 100%. Balance must be paid a day before or first thing on activity date. No refund will be granted for failing to join the activity on the reserved date and time without prior notice.</p>
+                
+                <h4>CANCELLATION AND REFUNDS</h4>
+                <p>Standard cancellation fees apply: 1-3 months prior: 25% forfeited | 7-14 days prior: 75% forfeited | Less than 7 days: 100% forfeited. All cancellations must be made in writing.</p>
+                
+                <p style="margin-top: 10px; font-weight: bold; text-align: center;">"See Africa at her best..."</p>
+                
+                <div class="sign-off">
+                    <p><strong>Sincerely,</strong></p>
+                    <p style="margin-top: 15px; border-top: 1px solid #333; display: inline-block; padding-top: 5px; font-weight: bold;">STEVEN THABETHE — MANAGING DIRECTOR</p>
+                    <p style="font-size: 0.8rem; color: #7f8c8d;">Contact: +27 82 344 8628 | Email: bookings@budzatja.co.za</p>
+                </div>
+            </div>
+
+        </section>
     </div>
-
-    <section class="invoice-form">
-        <h2>Create Invoice</h2>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="customerName">Customer Name</label>
-                <input type="text" id="customerName" placeholder="e.g. Mavrican (Pty) Ltd">
-            </div>
-            <div class="form-group">
-                <label for="invoiceDate">Invoice Date</label>
-                <input type="date" id="invoiceDate">
-            </div>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Booked Date</th>
-                    <th>Service / Description</th>
-                    <th>Guests (Pax)</th>
-                    <th>Price per Person</th>
-                    <th>Total</th>
-                    <th class="no-print" style="width: 50px;">Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="invoiceBody">
-                <tr>
-                    <td><input type="date" class="booked-date"></td>
-                    <td><input type="text" placeholder="e.g. KNP Full Day Safari"></td>
-                    <td><input type="number" class="qty" value="1" min="1"></td>
-                    <td><input type="number" class="price" value="0" min="0"></td>
-                    <td class="lineTotal">R0.00</td>
-                    <td class="no-print"></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="form-actions">
-            <button id="addRow" class="btn secondary-btn">+ Add Service</button>
-        </div>
-
-        <div class="total-display">
-            <h2>Grand Total: <span id="grandTotal">R0.00</span></h2>
-        </div>
-
-        <div style="text-align: right; margin-top: 20px;">
-            <button id="generateInvoice" class="btn action-btn">
-                Generate & Save Invoice
-            </button>
-        </div>
-    </section>
 
 </div>
 
