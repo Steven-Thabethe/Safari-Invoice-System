@@ -16,7 +16,6 @@
     </header>
 
     <div class="dashboard">
-
         <div class="card">
             <h2>Total Invoices</h2>
             <h3 id="invoiceCount">0</h3>
@@ -31,51 +30,63 @@
             <h2>Customers</h2>
             <h3>0</h3>
         </div>
-
     </div>
 
-    <button id="newInvoice">Create Invoice</button>
+    <div class="actions-bar">
+        <button id="newInvoice" class="btn primary-btn">Create New Invoice</button>
+    </div>
+
+    <section class="invoice-form">
+        <h2>Create Invoice</h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="customerName">Customer Name</label>
+                <input type="text" id="customerName" placeholder="e.g. Mavrican (Pty) Ltd">
+            </div>
+            <div class="form-group">
+                <label for="invoiceDate">Invoice Date</label>
+                <input type="date" id="invoiceDate">
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Service / Description</th>
+                    <th>Guests (Pax)</th>
+                    <th>Price per Person</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody id="invoiceBody">
+                <tr>
+                    <td><input type="text" placeholder="e.g. KNP Full Day Safari"></td>
+                    <td><input type="number" class="qty" value="1" min="1"></td>
+                    <td><input type="number" class="price" value="0" min="0"></td>
+                    <td class="lineTotal">R0.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="form-actions">
+            <button id="addRow" class="btn secondary-btn">+ Add Service</button>
+        </div>
+
+        <div class="total-display">
+            <h2>Grand Total: <span id="grandTotal">R0.00</span></h2>
+        </div>
+
+        <div style="text-align: right; margin-top: 20px;">
+            <button id="generateInvoice" class="btn action-btn">
+                Generate & Save Invoice
+            </button>
+        </div>
+    </section>
 
 </div>
 
 <script src="script.js"></script>
-
 </body>
 </html>
-<section class="invoice-form">
-
-    <h2>Create Invoice</h2>
-
-    <input type="text" id="customerName" placeholder="Customer Name">
-
-    <input type="date" id="invoiceDate">
-
-    <table>
-        <thead>
-            <tr>
-                <th>Service</th>
-                <th>Guests</th>
-                <th>Price</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-
-        <tbody id="invoiceBody">
-            <tr>
-                <td><input type="text" placeholder="Transfer"></td>
-                <td><input type="number" class="qty" value="1"></td>
-                <td><input type="number" class="price" value="0"></td>
-                <td class="lineTotal">R0.00</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <button id="addRow">+ Add Service</button>
-
-    <h2>Total: <span id="grandTotal">R0.00</span></h2>
-
-    <button id="generateInvoice">
-        Generate Invoice
-    </button>
-
-</section>
