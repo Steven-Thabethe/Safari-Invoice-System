@@ -61,3 +61,33 @@ button{
 button:hover{
     background:#15552f;
 }
+.invoice-form{
+    margin-top:40px;
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 3px 8px rgba(0,0,0,.1);
+}
+
+.invoice-form input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:center;
+}
+
+th{
+    background:#1d6b3d;
+    color:white;
+}
