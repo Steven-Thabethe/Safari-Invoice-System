@@ -53,19 +53,23 @@
         <table>
             <thead>
                 <tr>
+                    <th>Booked Date</th>
                     <th>Service / Description</th>
                     <th>Guests (Pax)</th>
                     <th>Price per Person</th>
                     <th>Total</th>
+                    <th class="no-print" style="width: 50px;">Action</th>
                 </tr>
             </thead>
 
             <tbody id="invoiceBody">
                 <tr>
+                    <td><input type="date" class="booked-date"></td>
                     <td><input type="text" placeholder="e.g. KNP Full Day Safari"></td>
                     <td><input type="number" class="qty" value="1" min="1"></td>
                     <td><input type="number" class="price" value="0" min="0"></td>
                     <td class="lineTotal">R0.00</td>
+                    <td class="no-print"></td>
                 </tr>
             </tbody>
         </table>
@@ -87,6 +91,8 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
+
 </body>
 </html>
